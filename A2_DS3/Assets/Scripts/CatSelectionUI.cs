@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CatSelectionUI : MonoBehaviour
 {
@@ -7,34 +8,34 @@ public class CatSelectionUI : MonoBehaviour
     public GameObject tabbyCat;
     public GameObject whiteCat;
     public Transform spawnPoint;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
+    public InputActionReference triggerAction;
+    private GameObject hoveredCat;
+
+    private void onEnable() {
+        if(triggerAction != null)
+        {
+            triggerAction.action.Enable();
+            triggerAction.action.performed += OnTriggerPressed;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    void spawnOrangeCat() {
+    public void spawnOrangeCat() {
         SpawnCat(orangeCat);
     }    
 
-    void spawnBlackCat() {
-        SpawnCat(orangeCat);
+    public void spawnBlackCat() {
+        SpawnCat(blackCat);
     }
 
-    void spawnWhiteCat() {
-        SpawnCat(orangeCat);
+    public void spawnWhiteCat() {
+        SpawnCat(whiteCat);
     }
 
-    void spawnOrangeCat() {
-        SpawnCat(orangeCat);
+    public void spawnTabbyCat() {
+        SpawnCat(tabbyCat);
     }
 
-    void SpawnCat(GameObject catPrefab)
+    private void SpawnCat(GameObject catPrefab)
     {
         if (catPrefab == null) {
             return;
