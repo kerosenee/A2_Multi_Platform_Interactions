@@ -11,11 +11,26 @@ public class CatSelectionUI : MonoBehaviour
     public InputActionReference triggerAction;
     private GameObject hoveredCat;
 
-    private void onEnable() {
+    private void OnEnable() {
         if(triggerAction != null)
         {
             triggerAction.action.Enable();
             triggerAction.action.performed += OnTriggerPressed;
+        }
+    }
+
+    private void OnDisable() {
+        if(triggerAction != null)
+        {
+            triggerAction.action.performed -= OnTriggerPressed;
+        }
+    }
+
+    private void OnTriggerPressed(InputAction.CallbackContext context)
+    {
+        if (hoveredCat != null)
+        {
+            SpawnCat(hoveredCat);
         }
     }
 
@@ -33,6 +48,16 @@ public class CatSelectionUI : MonoBehaviour
 
     public void spawnTabbyCat() {
         SpawnCat(tabbyCat);
+    }
+
+    public void setHoveredCat(GameObject catPrefab) {
+        hoveredCat = catPrefab;
+    }
+
+    public void clearHoveredCat(GameObject catPrefab) {
+        if(hoveredCat == catPrefab) {
+            hoveredCat = null;
+        }
     }
 
     private void SpawnCat(GameObject catPrefab)

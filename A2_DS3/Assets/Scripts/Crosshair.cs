@@ -7,10 +7,12 @@ public class Crosshair : MonoBehaviour
     public Color normalColor = Color.white;
     public Color interactColor = Color.green;
 
-    public void SetInteract(bool canInteract)
-    {
-        crosshairImage.color = canInteract ? interactColor : normalColor;
-    }
+public void SetInteract(bool canInteract)
+{
+    Debug.Log("Crosshair interact = " + canInteract);
+    crosshairImage.color = canInteract ? interactColor : normalColor;
+}
+
 
     void Start()
     {
