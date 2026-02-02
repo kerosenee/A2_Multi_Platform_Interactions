@@ -23,7 +23,7 @@ public class CatSelectionUI : MonoBehaviour
         int catCount = GameObject.FindGameObjectsWithTag("Cat").Length;
         if (catCount >= maxCats)
         {
-            Debug.Log("Cat limit reached. Not spawning.");
+            Debug.Log("reached the cat spawn limit!");
             return;
         }
         

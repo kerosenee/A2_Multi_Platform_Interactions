@@ -16,8 +16,6 @@ public class XRSelectCatHitbox : MonoBehaviour
         if(menu != null && catCollider != null)
         {
             menu.CatSelector(catCollider);
-            Debug.Log("RAY SELECT HIT: " + gameObject.name);
-
         }
     }
 }

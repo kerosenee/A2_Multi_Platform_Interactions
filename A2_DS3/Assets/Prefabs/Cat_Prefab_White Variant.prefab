@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cat_Prefab_White Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 7142885833433878216, guid: 279f731e2a4ac4b59acd32a2d60c5d4b, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
