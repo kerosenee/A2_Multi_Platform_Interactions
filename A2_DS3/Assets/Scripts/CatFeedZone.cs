@@ -2,22 +2,21 @@ using UnityEngine;
 
 public class CatFeedZone : MonoBehaviour
 {
-    private CatFeeder feeder;
-    private void Awake()
+    public bool HasFishInZone { get; private set; }
+
+    private int fishCountInZone = 0;
+
+    private void OnTriggerEnter(Collider other)
     {
-        feeder = GetComponentInParent<CatFeeder>();
+        if (!other.CompareTag("Fish")) return;
+        fishCountInZone++;
+        HasFishInZone = fishCountInZone > 0;
     }
 
-    private void OnTriggerEnter(Collider catCollider)
+    private void OnTriggerExit(Collider other)
     {
-        if (feeder == null)
-        {
-            return;
-        }
-
-        if(catCollider.CompareTag("Fish"))
-        {
-            feeder.Feed(catCollider.gameObject);
-        }
+        if (!other.CompareTag("Fish")) return;
+        fishCountInZone = Mathf.Max(0, fishCountInZone - 1);
+        HasFishInZone = fishCountInZone > 0;
     }
 }

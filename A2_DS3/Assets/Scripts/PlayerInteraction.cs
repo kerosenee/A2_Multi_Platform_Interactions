@@ -4,28 +4,18 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public int maxCats = 4;
     public float interactRange = 5f;
     public Camera playerCamera;
     public Crosshair crosshairScript;
 
-    public Transform spawnPoint;
-    public GameObject catLimitPopup;
-    private readonly Queue<GameObject> spawnedCats = new Queue<GameObject>();
-    private bool waitingForInput = false;
-    private GameObject newCatPrefab;
+    public float holdDistance = 2f;
+    public float holdDownOffset = 0.5f;
+    public float feedDistance = 1.2f;
 
-    public Transform holdPoint;
     private GameObject heldFish;
     private Rigidbody heldFishRB;
+    private Collider heldFishCollider;
 
-    public static PlayerInteraction Instance;
-    private void Awake()
-    {
-        Instance = this;
-        Debug.Log("PlayerInteraction Instance set by: " + gameObject.name);
-
-    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -35,152 +25,126 @@ public class PlayerInteraction : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (waitingForInput)
-        {
-            HandlePopupInput();
-            return;
-        }
-
-        bool canInteract = false;
-
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, interactRange))
+        if (crosshairScript != null)
         {
-            bool aimingAtCatButton = hit.collider.CompareTag("Interactable");
-            bool aimingAtFish = hit.collider.CompareTag("Fish");
-            bool aimingAtCat = hit.collider.CompareTag("Cat");
+            bool canInteract =
+                Physics.Raycast(ray, out hit, interactRange) &&
+                (hit.collider.CompareTag("Fish") ||
+                 hit.collider.CompareTag("Cat") ||
+                 hit.collider.CompareTag("Interactable"));
 
-            canInteract = aimingAtCatButton || aimingAtFish || aimingAtCat;
+            crosshairScript.SetInteract(canInteract);
+        }
 
-            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        if (heldFish != null)
+        {
+            Vector3 targetPos =
+                playerCamera.transform.position +
+                playerCamera.transform.forward * holdDistance +
+                playerCamera.transform.up * -holdDownOffset;
+
+            heldFish.transform.position = targetPos;
+        }
+
+        if (Keyboard.current == null || !Keyboard.current.eKey.wasPressedThisFrame)
+            return;
+
+        if (heldFish != null)
+        {
+            if (Physics.Raycast(ray, out hit, interactRange) && hit.collider.CompareTag("Cat"))
             {
-                if (heldFish != null && aimingAtCat)
+                Vector3 closest = hit.collider.ClosestPoint(heldFish.transform.position);
+                float dist = Vector3.Distance(heldFish.transform.position, closest);
+
+                if (dist <= feedDistance)
                 {
                     FeedCat(hit.collider.gameObject);
                     return;
                 }
-
-                // PICK UP FISH
-                if (heldFish == null && aimingAtFish)
-                {
-                    PickupFish(hit.collider.gameObject);
-                    return;
-                }
-
-                // SPAWN CAT FROM MENU
-                if (aimingAtCatButton)
-                {
-                    CatPrefab cat = hit.collider.GetComponent<CatPrefab>();
-                    if (cat != null)
-                    {
-                        spawnCatAttempt(cat.catPrefab);
-                    }
-                    return;
-                }
             }
-        }
 
-        if (crosshairScript != null)
-        {
-            crosshairScript.SetInteract(canInteract);
-        }
-    }
-
-
-    private void spawnCatAttempt(GameObject catPrefab)
-    {
-        if (spawnedCats.Count < maxCats)
-        {
-            spawnCat(catPrefab);
+            DropFish();
             return;
         }
-        newCatPrefab = catPrefab;
-        waitingForInput = true;
 
-        if (catLimitPopup != null)
+        if (!Physics.Raycast(ray, out hit, interactRange))
+            return;
+
+        if (hit.collider.CompareTag("Fish"))
         {
-            catLimitPopup.SetActive(true);
+            PickupFish(hit.collider.gameObject);
+            return;
         }
-    }
 
-    private void HandlePopupInput()
-    {
-        if (Keyboard.current.enterKey.wasPressedThisFrame)
+        if (hit.collider.CompareTag("Interactable"))
         {
-            if (spawnedCats.Count > 0)
+            CatSelectionUI menu = hit.collider.GetComponentInParent<CatSelectionUI>();
+            if (menu != null)
             {
-                GameObject oldestCat = spawnedCats.Dequeue();
-                if (oldestCat != null)
-                {
-                    Destroy(oldestCat);
-                }
+                menu.CatSelector(hit.collider);
             }
-
-            if (newCatPrefab != null)
-            {
-                spawnCat(newCatPrefab);
-            }
-
-            ClosePopup();
+            return;
         }
 
-        else if (Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            ClosePopup();
-        }
     }
 
-    private void ClosePopup()
+    void PickupFish(GameObject fish)
     {
-        waitingForInput = false;
-        newCatPrefab = null;
+        if (fish == null) return;
 
-        if (catLimitPopup != null)
-        {
-            catLimitPopup.SetActive(false);
-        }
+        Rigidbody rb = fish.GetComponent<Rigidbody>();
+        if (rb == null) return;
+
+        heldFish = fish;
+        heldFishRB = rb;
+
+        heldFishCollider = fish.GetComponent<Collider>();
+        if (heldFishCollider != null)
+            heldFishCollider.enabled = false;
+
+        rb.useGravity = false;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        heldFish.transform.position =
+                    playerCamera.transform.position +
+                    playerCamera.transform.forward * holdDistance +
+                    playerCamera.transform.up * -holdDownOffset;
     }
 
-    private void spawnCat(GameObject catPrefab)
+    void DropFish()
     {
-        Vector3 pos = spawnPoint ? spawnPoint.position : Vector3.zero;
-        Quaternion rot = spawnPoint ? spawnPoint.rotation : Quaternion.identity;
+        if (heldFishCollider != null)
+            heldFishCollider.enabled = true;
 
-        GameObject cat = Instantiate(catPrefab, pos, rot);
-        spawnedCats.Enqueue(cat);
+        if (heldFishRB != null)
+        {
+            heldFishRB.useGravity = true;
+            heldFishRB.linearVelocity = Vector3.zero;
+            heldFishRB.angularVelocity = Vector3.zero;
+        }
+
+        heldFish = null;
+        heldFishRB = null;
+        heldFishCollider = null;
     }
 
-    private void FeedCat(GameObject catObject)
+    void FeedCat(GameObject catObject)
     {
         if (heldFish == null) return;
 
+        GameObject fishToDestroy = heldFish;
+
+        heldFish = null;
+        heldFishRB = null;
+
         CatFeeder feeder = catObject.GetComponentInParent<CatFeeder>();
         if (feeder != null)
-        {
-            feeder.Feed(heldFish);
-            heldFish = null;
-            heldFishRB = null;
-        }
+            feeder.Feed(fishToDestroy);
+        else
+            Destroy(fishToDestroy);
     }
-
-    private void PickupFish(GameObject fishObject)
-    {
-        heldFish = fishObject;
-
-        heldFishRB = heldFish.GetComponent<Rigidbody>();
-        if (heldFishRB != null)
-            heldFishRB.isKinematic = true;
-
-        heldFish.transform.SetParent(holdPoint);
-        heldFish.transform.localPosition = Vector3.zero;
-        heldFish.transform.localRotation = Quaternion.identity;
-    }
-
-    public void RequestSpawnCat(GameObject catPrefab)
-    {
-        spawnCatAttempt(catPrefab);
-    }
-
 }

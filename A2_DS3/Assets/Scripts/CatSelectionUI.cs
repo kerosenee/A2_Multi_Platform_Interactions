@@ -1,68 +1,54 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class CatSelectionUI : MonoBehaviour
 {
+    public int maxCats = 4;
+    public GameObject catLimitPopup;
     public GameObject orangeCat;
     public GameObject blackCat;
     public GameObject tabbyCat;
     public GameObject whiteCat;
     public Transform spawnPoint;
-    public InputActionReference triggerAction;
-    private GameObject hoveredCat;
 
-    private void OnEnable() {
-        if(triggerAction != null)
-        {
-            triggerAction.action.Enable();
-            triggerAction.action.performed += OnTriggerPressed;
-        }
-    }
+    public Collider orangeButton;
+    public Collider blackButton;
+    public Collider tabbyButton;
+    public Collider whiteButton;
 
-    private void OnDisable() {
-        if(triggerAction != null)
-        {
-            triggerAction.action.performed -= OnTriggerPressed;
-        }
-    }
 
-    private void OnTriggerPressed(InputAction.CallbackContext context)
+    public void CatSelector(Collider hitCollider)
     {
-        if (hoveredCat != null)
+        int catCount = GameObject.FindGameObjectsWithTag("Cat").Length;
+        if (catCount >= maxCats)
         {
-            SpawnCat(hoveredCat);
+            Debug.Log("Cat limit reached. Not spawning.");
+            return;
         }
-    }
-
-    public void spawnOrangeCat() {
-        SpawnCat(orangeCat);
-    }    
-
-    public void spawnBlackCat() {
-        SpawnCat(blackCat);
-    }
-
-    public void spawnWhiteCat() {
-        SpawnCat(whiteCat);
-    }
-
-    public void spawnTabbyCat() {
-        SpawnCat(tabbyCat);
-    }
-
-    public void setHoveredCat(GameObject catPrefab) {
-        hoveredCat = catPrefab;
-    }
-
-    public void clearHoveredCat(GameObject catPrefab) {
-        if(hoveredCat == catPrefab) {
-            hoveredCat = null;
+        
+        if (hitCollider == orangeButton)
+        {
+            SpawnCat(orangeCat);
+        }
+        else if (hitCollider == blackButton)
+        {
+            SpawnCat(blackCat);
+        }
+        else if (hitCollider == tabbyButton)
+        {
+            SpawnCat(tabbyCat);
+        }
+        else if (hitCollider == whiteButton)
+        {
+            SpawnCat(whiteCat);
         }
     }
 
     private void SpawnCat(GameObject catPrefab)
     {
-        if (catPrefab == null) {
+        if (catPrefab == null)
+        {
             return;
         }
 
@@ -70,5 +56,6 @@ public class CatSelectionUI : MonoBehaviour
         Quaternion rot = spawnPoint ? spawnPoint.rotation : Quaternion.identity;
 
         Instantiate(catPrefab, pos, rot);
+
     }
 }
