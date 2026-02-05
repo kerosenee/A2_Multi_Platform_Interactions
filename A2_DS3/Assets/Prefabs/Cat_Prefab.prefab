@@ -1182,8 +1182,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba74b3c01870744f48572ef26784c368, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementRadius: 500
-  movementInterval: 4.26
+  movementRadius: 497.2
+  movementInterval: 3
 --- !u!64 &5151661122683310340
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1241,8 +1241,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.14
-  m_Height: 0.22
+  m_Radius: 0.11
+  m_Height: 0.19
   m_Direction: 1
   m_Center: {x: 0, y: 0.11604768, z: 0}
 --- !u!82 &7706887925095519746
@@ -1556,8 +1556,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 4.59
-  m_Height: 12.46
+  m_Radius: 5
+  m_Height: 12.86
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6223168906714877181
